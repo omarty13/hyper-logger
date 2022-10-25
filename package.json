@@ -1,0 +1,24 @@
+{
+  "name": "@omarty13/hyper-logger",
+  "version": "1.0.0",
+  "description": "logger",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omarty13/hyper-logger.git"
+  },
+  "keywords": [
+    "hyper",
+    "logger",
+    "simple"
+  ],
+  "author": "ohhhmarty@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omarty13/hyper-logger/issues"
+  },
+  "homepage": "https://github.com/omarty13/hyper-logger#readme"
+}
