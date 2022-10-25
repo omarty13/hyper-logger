@@ -45,7 +45,12 @@ Simple logger for node.js without dependencies
 		console.log(err.stack);
 	});
 
-	coreLogger.trace("", { className: "SomeClass", instanceName: "someInstanceName", funcName: 'someFunctionName', data: { foo: "bar", ["something else"] }});
+	coreLogger.trace("", {
+		className: "SomeClass",
+		instanceName: "someInstanceName",
+		funcName: 'someFunctionName',
+		data: { foo: "bar", someArray: ["one", "two"] }
+	});
 
-
+	// [25-10-2022 22:50:04.975] [trace] [SomeClass::someInstanceName] someFunctionName : {"foo":"bar","someArray":["one","two"]}
 <br>
