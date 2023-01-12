@@ -29,7 +29,7 @@ Simple logger for node.js without dependencies
 	2 - Usage <a href="#anch_up">↑</a>
 </h1>
 
-	const HyperLogger                       = require("../logs/HyperLogger");
+	import { HyperLogger, }                 from './index.mjs';
 
 
 	const hyperLogger = new HyperLogger({
@@ -45,7 +45,7 @@ Simple logger for node.js without dependencies
 		console.log(err.stack);
 	});
 
-	coreLogger.trace("", {
+	hyperLogger.trace("", {
 		className: "SomeClass",
 		instanceName: "someInstanceName",
 		funcName: 'someFunctionName',
@@ -53,4 +53,11 @@ Simple logger for node.js without dependencies
 	});
 
 	// [25-10-2022 22:50:04.975] [trace] [SomeClass::someInstanceName] someFunctionName : {"foo":"bar","someArray":["one","two"]}
+
+	hyperLogger.fatal("This is fatal message.", { className: "index.js", instanceName: "instanceName", funcName: "funcFatal()", data: { a: 1, } });
+	hyperLogger.error("This is error message.", { className: "index.js", instanceName: "instanceName", funcName: "funcError()", messageColors: [ "fgGreen", ], });
+	hyperLogger.warn("This is warn message.", { className: "index.js", instanceName: "instanceName", funcName: "funcWarn()", messageColors: [ "bgBlue", ], });
+	hyperLogger.info("This is info message.", { className: "index.js", instanceName: "instanceName", funcName: "funcInfo()", messageColors: [ "fgBlue", ], });
+	hyperLogger.debug("This is debug message.", { className: "index.js", instanceName: "instanceName", funcName: "funcDebug()", messageColors: [ "underscore", "bgGray", ], });
+	hyperLogger.trace("This is trace message.", { className: "index.js", instanceName: "instanceName", funcName: "funcTrace()", messageColors: [ "bright", ], });
 <br>
