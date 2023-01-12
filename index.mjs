@@ -1,12 +1,53 @@
 'use strict';
 
-const path                              = require('path');
-const fs                                = require('fs');
-const fsPromises                        = require('fs').promises;
-const EventEmitter                      = require('events');
+import path                             from 'path';
+import fs                               from 'fs';
+import fsPromises                       from 'fs/promises';
+import EventEmitter                     from 'events';
 
 
-module.exports = class HyperLogger extends EventEmitter
+const COLORS = {
+	reset: "\x1b[0m",
+	bright: "\x1b[1m",
+	underscore: "\x1b[4m",
+	reverse: "\x1b[7m",
+	// dim: "\x1b[2m",
+	// blink: "\x1b[5m",
+	// hidden: "\x1b[8m",
+	fgBlack: "\x1b[30m",
+	fgRed: "\x1b[31m",
+	fgGreen: "\x1b[32m",
+	fgYellow: "\x1b[33m",
+	fgBlue: "\x1b[34m",
+	fgMagenta: "\x1b[35m",
+	fgCyan: "\x1b[36m",
+	fgWhite: "\x1b[37m",
+	fgGray: "\x1b[90m",
+	bgBlack: "\x1b[40m",
+	bgRed: "\x1b[41m",
+	bgGreen: "\x1b[42m",
+	bgYellow: "\x1b[43m",
+	bgBlue: "\x1b[44m",
+	bgMagenta: "\x1b[45m",
+	bgCyan: "\x1b[46m",
+	bgWhite: "\x1b[47m",
+	bgGray: "\x1b[100m",
+};
+
+export const consoleColors = {
+	make: (txt, colors) => {
+		let rslt = "";
+		for (let i = 0; i < colors.length; i++) {
+			if (COLORS[colors[i]]) {
+				rslt += COLORS[colors[i]];
+			}
+		}
+		rslt += txt + COLORS.reset;
+		return rslt;
+	}
+}
+
+export class HyperLogger extends EventEmitter
 {
 	/**
 	* HyperLogger constructor.
@@ -68,6 +109,17 @@ module.exports = class HyperLogger extends EventEmitter
 		// ---------------------------------------------------------
 		this._levels = params.levels || [ "fatal", "error", "warn", "info", "debug", "trace", ];
 		this._level = params.level || this._levels.slice(-1)[0];
+		
+		// ---------------------------------------------------------
+		const levelColors = {
+			"fatal":  [ "fgBlack", "bgRed", ],
+			"error":  [ "fgRed", ],
+			"warn":   [ "fgYellow", ],
+			"info":   [ "fgCyan", ],
+			"debug":  [ "fgGreen", ],
+			"trace":  [ "fgGray", ],
+		};
+		this._levelColors = params.levelColors ? Object.assign(levelColors, params.levelColors) : levelColors;
 
 		// ---------------------------------------------------------
 		this._curfilePtr = 0;
@@ -292,13 +344,13 @@ module.exports = class HyperLogger extends EventEmitter
 				}
 
 				if (indx <= this._levelIndex && this._wstream.writable == true) {
-					const log = this._formatLog(message, level, params);
-
+					const { logtxtToCons, logtxtToFile, } = this._formatLog(message, level, params);
+					
 					if (params.isNotConsole !== true) {
-						console.log(log);
+						console.log(logtxtToCons);
 					}
 
-					const buf = Buffer.from((log +"\n"), "utf-8");
+					const buf = Buffer.from((logtxtToFile +"\n"), "utf-8");
 					this._wstream.write(buf);
 					this._curfileSize += buf.length;
 					
@@ -322,7 +374,28 @@ module.exports = class HyperLogger extends EventEmitter
 	*/
 	_formatLog(message, level, params) {
 		if (params.isOnlyMessage == true) {
-			return message;
+			const logtxtToCons = params.messageColors ? consoleColors.make(message, params.messageColors) : message;
+			const logtxtToFile = message;
+			return { logtxtToCons, logtxtToFile, };
+		}
+
+		const logPartsCons = [];
+		const logPartsFile = [];
+
+		if (params.funcName) {
+			logPartsCons.push(consoleColors.make(params.funcName, [ "bright", "fgCyan", ]));
+			logPartsFile.push(params.funcName);
+		}
+
+		if (message && message.length > 0) {
+			logPartsCons.push(params.messageColors ? consoleColors.make(message, params.messageColors) : message);
+			logPartsFile.push(message);
+		}
+
+		if (params.data) {
+			const dataStr = JSON.stringify(params.data);
+			logPartsCons.push(dataStr);
+			logPartsCons.push(dataStr)
 		}
 
 		let millisec = String(new Date().getUTCMilliseconds());
@@ -340,30 +413,25 @@ module.exports = class HyperLogger extends EventEmitter
 			classInstanceName += "["+ params.instanceName +"]";
 		}
 
-		let funcName = "";
-		if (params.funcName) {
-			funcName = " "+ params.funcName;
-		}
-		
-		let _message = "";
-		if (message.length > 0) {
-			_message = " : "+ message;
-		}
-		
-		let data = "";
-		if (params.data) {
-			data = " : "+ JSON.stringify(params.data);
+		let levelTxtFile = level;
+		if (levelTxtFile.length < 5) {
+			while (levelTxtFile.length < 5) levelTxtFile += " ";
+		} else if (levelTxtFile.length > 5) {
+			levelTxtFile = levelTxtFile.substr(0, 5);
 		}
 
-		if (level.length < 5) {
-			while (level.length < 5) level += " ";
-		} else if (level.length > 5) {
-			level = level.substr(0, 5);
+		let levelTxtCons = consoleColors.make("[", [ "bright", "fgCyan", ]);
+		if (this._levelColors[level]) {
+			levelTxtCons += consoleColors.make(levelTxtFile, this._levelColors[level])
+		} else {
+			levelTxtCons += levelTxtFile;
 		}
+		levelTxtCons += consoleColors.make("]", [ "bright", "fgCyan", ]);
 
-		let logtext = `[${HyperLogger.createTimestamp()}] [${level}]${classInstanceName}${funcName}${_message}${data}`;
+		let logtxtToCons = `[${HyperLogger.createTimestamp()}] ${levelTxtCons}${classInstanceName} ${logPartsCons.join(" : ")}`;
+		let logtxtToFile = `[${HyperLogger.createTimestamp()}] [${levelTxtFile}]${classInstanceName} ${logPartsFile.join(" : ")}`;
 
-		return logtext;
+		return { logtxtToCons, logtxtToFile, };
 	}
 
 	/**
