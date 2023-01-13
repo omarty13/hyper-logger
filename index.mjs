@@ -113,10 +113,10 @@ export class HyperLogger extends EventEmitter
 		// ---------------------------------------------------------
 		const levelColors = {
 			"fatal":  [ "fgBlack", "bgRed", ],
-			"error":  [ "fgRed", ],
-			"warn":   [ "fgYellow", ],
-			"info":   [ "fgCyan", ],
-			"debug":  [ "fgGreen", ],
+			"error":  [ "fgRed", "bright", ],
+			"warn":   [ "fgYellow", "bright", ],
+			"info":   [ "fgWhite", "bright", ],
+			"debug":  [ "fgGreen", "bright", ],
 			"trace":  [ "fgGray", ],
 		};
 		this._levelColors = params.levelColors ? Object.assign(levelColors, params.levelColors) : levelColors;
