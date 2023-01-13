@@ -395,7 +395,7 @@ export class HyperLogger extends EventEmitter
 		if (params.data) {
 			const dataStr = JSON.stringify(params.data);
 			logPartsCons.push(dataStr);
-			logPartsCons.push(dataStr)
+			logPartsFile.push(dataStr)
 		}
 
 		let millisec = String(new Date().getUTCMilliseconds());

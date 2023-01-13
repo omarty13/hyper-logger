@@ -2,7 +2,7 @@
   "name": "@omarty13/hyper-logger",
   "version": "2.0.0",
   "description": "logger",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
