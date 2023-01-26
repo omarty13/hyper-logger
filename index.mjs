@@ -124,7 +124,6 @@ export class HyperLogger extends EventEmitter
 		// ---------------------------------------------------------
 		this._curfilePtr = 0;
 		this._curfileSize = 0;
-		this._queue = [];
 
 		// ---------------------------------------------------------
 		this._createFunctions({
@@ -141,11 +140,28 @@ export class HyperLogger extends EventEmitter
 	}
 
 	/**
+	 * Function to write the latest logs to a file. If no callback is passed, it will work like an async function.
+	 * @param {Function} [cb] - Callback.
+	 */
+	async stop(cb) {
+		if (cb) {
+			this._wstream.on("close", () => cb());
+			this._wstream.end();
+		}
+		else {
+			await new Promise((resolve, reject) => {
+				this._wstream.on("close", () => resolve());
+				this._wstream.end();
+			});
+		}
+	}
+
+	/**
 	 * Async function for start.
 	 * @return {undefined}
 	 */
-	async _start() {
-		const logStats = await this._getLogStats();
+	_start() {
+		const logStats = this._getLogStats();
 
 		// -----------------------------------------------------------------------------
 		let filename;
@@ -179,33 +195,23 @@ export class HyperLogger extends EventEmitter
 		});
 
 		setImmediate(() => this._deleteTail());
-
-		// -----------------------------------------------------------------------------
-		if (this._queue.length > 0) {
-			for (let i = 0; i < this._queue.length; i++) {
-				const args = this._queue[i];
-				this[args.level](args.message, args.params);
-			}
-
-			this._queue = [];
-		}
 	}
 
 	/**
 	 * Function for get log stats.
 	 * @return {Array} Returns array of objects => [{ name:<String>, stat:<fs.Stats>, num:<Number>, }]
 	 */
-	async _getLogStats() {
+	_getLogStats() {
 		let fileNames;
 		try {
-			fileNames = await fsPromises.readdir(this._dirname);
+			fileNames = fs.readdirSync(this._dirname);
 		} catch (err) {
 			if (err.code != "ENOENT") {
 				this.emit("error", err);
 				return [];
 			}
 			try {
-				await fsPromises.mkdir(this._dirname);
+				fs.mkdirSync(this._dirname);
 				fileNames = [];
 			} catch (err) {
 				this.emit("error", err);
@@ -224,7 +230,7 @@ export class HyperLogger extends EventEmitter
 
 			let stat;
 			try {
-				stat = await fsPromises.stat(path.normalize(`${this._dirname}/${fileNames[i]}`));
+				stat = fs.statSync(path.normalize(`${this._dirname}/${fileNames[i]}`));
 			} catch (err) {
 				if (err.code == "ENOENT") {
 					continue;
@@ -244,8 +250,6 @@ export class HyperLogger extends EventEmitter
 			this._sortLogStats(logStats);
 		}
 
-		// console.log(this._formatLog("", " DEV ", { className: "HyperLogger", funcName: "_getLogStats", }), logStats);
-
 		return logStats;
 	}
 
@@ -254,7 +258,7 @@ export class HyperLogger extends EventEmitter
 	 * @return {undefined}
 	 */
 	async _deleteTail() {
-		const logStats = await this._getLogStats();
+		const logStats = this._getLogStats();
 		// console.log(this._formatLog("", " DEV ", { className: "HyperLogger", funcName: "_deleteTail", data: { "logStats.length": logStats.length, }, }));
 
 		if (logStats.length <= this._maxFiles) {
@@ -267,7 +271,7 @@ export class HyperLogger extends EventEmitter
 
 		for (let i = 0; i < logStatsTail.length; i++) {
 			try {
-				await fsPromises.unlink(`${this._dirname}/${logStatsTail[i].name}`);
+				fs.unlinkSync(`${this._dirname}/${logStatsTail[i].name}`);
 			} catch (err) {
 				this.emit("error", err);
 			}
@@ -321,11 +325,6 @@ export class HyperLogger extends EventEmitter
 			const level = levels[i];
 
 			this[levels[i]] = (message, params) => {
-				if (this._wstream == null) {
-					this._queue.push({ message, level, params, });
-					return;
-				}
-
 				if (this._curfileSize >= this._maxSize) {
 					this._wstream.end();
 

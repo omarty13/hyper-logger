@@ -20,3 +20,5 @@ logger.warn("This is warn message.", { className: "index.js", instanceName: "ins
 logger.info("This is info message.", { className: "index.js", instanceName: "instanceName", funcName: "funcInfo()", messageColors: [ "fgBlue", ], });
 logger.debug("This is debug message.", { className: "index.js", instanceName: "instanceName", funcName: "funcDebug()", messageColors: [ "underscore", "bgGray", ], });
 logger.trace("This is trace message.", { className: "index.js", instanceName: "instanceName", funcName: "funcTrace()", messageColors: [ "bright", ], });
+
+logger.stop(() => process.exit());

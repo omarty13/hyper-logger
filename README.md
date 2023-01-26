@@ -1,6 +1,6 @@
 <h1 id="anch_up">Hyper Logger</h1>
 
-Simple logger for node.js without dependencies
+Simple logger for node.js without dependencies.
 
 --------------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ Simple logger for node.js without dependencies
 	import { HyperLogger, }                 from './index.mjs';
 
 
-	const hyperLogger = new HyperLogger({
+	const logger = new HyperLogger({
 		levels: [ "fatal", "error", "warn", "info", "debug", "trace", ],
 		level: "trace",
 		dirname: "../Logs",
@@ -41,11 +41,11 @@ Simple logger for node.js without dependencies
 		maxFiles: 20,
 	});
 
-	hyperLogger.on("error", (err) => {
+	logger.on("error", (err) => {
 		console.log(err.stack);
 	});
 
-	hyperLogger.trace("", {
+	logger.trace("", {
 		className: "SomeClass",
 		instanceName: "someInstanceName",
 		funcName: 'someFunctionName',
@@ -54,10 +54,13 @@ Simple logger for node.js without dependencies
 
 	// [25-10-2022 22:50:04.975] [trace] [SomeClass::someInstanceName] someFunctionName : {"foo":"bar","someArray":["one","two"]}
 
-	hyperLogger.fatal("This is fatal message.", { className: "index.js", instanceName: "instanceName", funcName: "funcFatal()", data: { a: 1, } });
-	hyperLogger.error("This is error message.", { className: "index.js", instanceName: "instanceName", funcName: "funcError()", messageColors: [ "fgGreen", ], });
-	hyperLogger.warn("This is warn message.", { className: "index.js", instanceName: "instanceName", funcName: "funcWarn()", messageColors: [ "bgBlue", ], });
-	hyperLogger.info("This is info message.", { className: "index.js", instanceName: "instanceName", funcName: "funcInfo()", messageColors: [ "fgBlue", ], });
-	hyperLogger.debug("This is debug message.", { className: "index.js", instanceName: "instanceName", funcName: "funcDebug()", messageColors: [ "underscore", "bgGray", ], });
-	hyperLogger.trace("This is trace message.", { className: "index.js", instanceName: "instanceName", funcName: "funcTrace()", messageColors: [ "bright", ], });
+	logger.fatal("This is fatal message.", { className: "index.js", instanceName: "instanceName", funcName: "funcFatal()", data: { a: 1, } });
+	logger.error("This is error message.", { className: "index.js", instanceName: "instanceName", funcName: "funcError()", messageColors: [ "fgGreen", ], });
+	logger.warn("This is warn message.", { className: "index.js", instanceName: "instanceName", funcName: "funcWarn()", messageColors: [ "bgBlue", ], });
+	logger.info("This is info message.", { className: "index.js", instanceName: "instanceName", funcName: "funcInfo()", messageColors: [ "fgBlue", ], });
+	logger.debug("This is debug message.", { className: "index.js", instanceName: "instanceName", funcName: "funcDebug()", messageColors: [ "underscore", "bgGray", ], });
+	logger.trace("This is trace message.", { className: "index.js", instanceName: "instanceName", funcName: "funcTrace()", messageColors: [ "bright", ], });
+
+	// Call stop() to write the latest logs to a file. If no callback is passed, it will work like an async function.
+	logger.stop(() => process.exit());
 <br>
