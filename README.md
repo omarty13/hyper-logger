@@ -45,6 +45,11 @@ Simple logger for node.js without dependencies.
 		console.log(err.stack);
 	});
 
+	// To see the log with the reason if an uncaughtException occurs
+	process.on('uncaughtExceptionMonitor', (err, origin) => {
+		logger.fatal(err.stack, { className: "index.js", instanceName: "instanceName", funcName: "process.on('uncaughtExceptionMonitor')", data: { err, origin, } });
+	});
+
 	logger.trace("", {
 		className: "SomeClass",
 		instanceName: "someInstanceName",
