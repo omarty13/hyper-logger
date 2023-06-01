@@ -349,7 +349,7 @@ export class HyperLogger extends EventEmitter
 						console.log(logtxtToCons);
 					}
 
-					const buf = Buffer.from((logtxtToFile +"\n"), "utf-8");
+					const buf = Buffer.from((logtxtToFile +"\r\n"), "utf-8");
 					this._wstream.write(buf);
 					this._curfileSize += buf.length;
 					
