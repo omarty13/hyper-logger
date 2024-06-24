@@ -1,9 +1,9 @@
 'use strict';
 
-import path                             from 'path';
-import fs                               from 'fs';
-import fsPromises                       from 'fs/promises';
-import EventEmitter                     from 'events';
+const path                             = require('path');
+const fs                               = require('fs');
+const fsPromises                       = require('fs/promises');
+const EventEmitter                     = require('events');
 
 
 const COLORS = {
@@ -34,7 +34,7 @@ const COLORS = {
 	bgGray: "\x1b[100m",
 };
 
-export const consoleColors = {
+const consoleColors = module.exports.consoleColors = {
 	make: (txt, colors) => {
 		let rslt = "";
 		for (let i = 0; i < colors.length; i++) {
@@ -47,7 +47,7 @@ export const consoleColors = {
 	}
 }
 
-export class HyperLogger extends EventEmitter
+module.exports.HyperLogger = class HyperLogger extends EventEmitter
 {
 	/**
 	* HyperLogger constructor.
